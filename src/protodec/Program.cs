@@ -14,6 +14,7 @@ using LibProtodec;
 using LibProtodec.Loaders;
 using LibProtodec.Models.Cil;
 using LibProtodec.Models.Protobuf;
+using Loretta.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 ConsoleApp.ConsoleAppBuilder app = ConsoleApp.Create();
@@ -47,10 +48,10 @@ internal sealed class Commands
         using ILoggerFactory loggerFactory = CreateLoggerFactory(logLevel);
         ILogger logger = CreateProtodecLogger(loggerFactory);
 
-        logger.LogInformation("Loading target assemblies...");
+        logger.LogInformation("Loading CIL assemblies...");
         using ClrAssemblyLoader loader = new(targetPath, loggerFactory.CreateLogger<ClrAssemblyLoader>());
 
-        Handle(
+        HandleCil(
             loader,
             outPath,
             skipEnums,
@@ -100,10 +101,10 @@ internal sealed class Commands
         using ILoggerFactory loggerFactory = CreateLoggerFactory(logLevel);
         ILogger logger = CreateProtodecLogger(loggerFactory);
 
-        logger.LogInformation("Loading target assemblies...");
+        logger.LogInformation("Loading Il2Cpp assembly and metadata...");
         Il2CppAssemblyLoader loader = new(gameAssembly, globalMetadata, unityVer, loggerFactory);
 
-        Handle(
+        HandleCil(
             loader,
             outPath,
             skipEnums,
@@ -115,7 +116,73 @@ internal sealed class Commands
             logger);
     }
 
-    private static void Handle(
+    /// <summary>
+    ///     Use Lua AST backend to load Lua source files.
+    /// </summary>
+    /// <param name="targetPath">Either the path to the target lua file or a directory of lua files, all of which be parsed.</param>
+    /// <param name="outPath">An existing directory to output into individual files, otherwise output to a single file.</param>
+    /// <param name="logLevel">Logging severity level.</param>
+    [Command("lua")]
+    public void Lua(
+        [Argument] string targetPath,
+        [Argument] string outPath,
+        LogLevel logLevel = LogLevel.Information)
+    {
+        using ILoggerFactory loggerFactory = CreateLoggerFactory(logLevel);
+        ILogger logger = CreateProtodecLogger(loggerFactory);
+
+        logger.LogInformation("Loading Lua sources...");
+        LuaSourceLoader loader = new(targetPath, loggerFactory.CreateLogger<LuaSourceLoader>());
+
+        ProtodecContext ctx = new()
+        {
+            Logger = loggerFactory.CreateLogger<ProtodecContext>()
+        };
+
+        logger.LogInformation("Parsing Lua syntax trees...");
+        foreach (SyntaxTree ast in loader.LoadedSyntaxTrees)
+        {
+            ctx.ParseLuaSyntaxTree(ast);
+        }
+
+        // NOTE: I'm duplicating this code rather than refactoring because I have a lot of uncommited changes on another computer,
+        //       therefore, so as to not give myself brain cancer, I will not touch anything that would cause git conflicts.
+        const string indent = "  ";
+        if (Directory.Exists(outPath))
+        {
+            logger.LogInformation("Writing {count} Protobuf files to \"{path}\"...", ctx.Protobufs.Count, outPath);
+
+            HashSet<string> writtenFiles = [];
+            foreach (Protobuf protobuf in ctx.Protobufs)
+            {
+                // This workaround stops files from being overwritten in the case of a naming conflict,
+                // however the actual conflict will still have to be resolved manually
+                string fileName = protobuf.FileName;
+                while (!writtenFiles.Add(fileName))
+                {
+                    fileName = '_' + fileName;
+                }
+
+                string protobufPath = Path.Join(outPath, fileName);
+
+                using StreamWriter streamWriter = new(protobufPath);
+                using IndentedTextWriter indentWriter = new(streamWriter, indent);
+
+                protobuf.WriteTo(indentWriter);
+            }
+        }
+        else
+        {
+            logger.LogInformation("Writing Protobufs as a single file to \"{path}\"...", outPath);
+
+            using StreamWriter streamWriter = new(outPath);
+            using IndentedTextWriter indentWriter = new(streamWriter, indent);
+
+            ctx.WriteAllTo(indentWriter);
+        }
+    }
+
+    private static void HandleCil(
         CilAssemblyLoader loader,
         string            outPath,
         bool              skipEnums,

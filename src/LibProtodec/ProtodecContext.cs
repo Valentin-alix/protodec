@@ -24,7 +24,7 @@ namespace LibProtodec;
 public delegate bool NameLookupFunc(string name, [MaybeNullWhen(false)] out string translatedName);
 
 // ReSharper disable ClassWithVirtualMembersNeverInherited.Global, MemberCanBePrivate.Global, MemberCanBeProtected.Global, PropertyCanBeMadeInitOnly.Global
-public class ProtodecContext
+public partial class ProtodecContext
 {
     private readonly Dictionary<string, TopLevel> _parsed = [];
 

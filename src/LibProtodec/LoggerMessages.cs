@@ -18,6 +18,9 @@ internal static partial class LoggerMessages
     [LoggerMessage(Level = LogLevel.Information, Message = "Loaded {typeCount} types from {assemblyCount} assemblies for parsing.")]
     internal static partial void LogLoadedTypeAndAssemblyCount(this ILogger logger, int typeCount, int assemblyCount);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Loaded {treeCount} Lua syntax trees for parsing.")]
+    internal static partial void LogLoadedLuaSyntaxTrees(this ILogger logger, int treeCount);
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "Parsed as enum \"{name}\".")]
     internal static partial void LogParsedEnum(this ILogger logger, string name);
 
