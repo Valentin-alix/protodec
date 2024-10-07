@@ -35,7 +35,8 @@ public sealed class LuaSourceLoader
 
         return LuaSyntaxTree.ParseText(
             SourceText.From(fileStream),
-            null, // TODO: maybe expose the options parameter
+            null, // TODO: maybe expose this as a parameter
             Path.GetFileName(filePath));
+        //TODO: consider checking lua source validity via SyntaxTree.GetDiagnostics()
     }
 }
