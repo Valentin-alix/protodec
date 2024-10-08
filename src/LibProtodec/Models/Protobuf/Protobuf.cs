@@ -8,25 +8,38 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommunityToolkit.Diagnostics;
 using LibProtodec.Models.Protobuf.TopLevels;
 
 namespace LibProtodec.Models.Protobuf;
 
 public sealed class Protobuf
 {
+    private int _version = 3;
     private string? _fileName;
     private HashSet<string>? _imports;
 
     public readonly List<TopLevel> TopLevels = [];
 
-    public string? Edition      { get; set;  }
     public string? AssemblyName { get; init; }
-    public string? Namespace    { get; init; }
+    public string? SourceName   { get; init; }
+    public string? Edition      { get; set;  }
+    public string? CilNamespace { get; init; }
 
     public string FileName
     {
         get => _fileName ??= $"{string.Join('_', TopLevels.Select(static topLevel => topLevel.Name))}.proto";
         set => _fileName = value;
+    }
+
+    public int Version
+    {
+        get => _version;
+        set
+        {
+            Guard.IsBetweenOrEqualTo(value, 2, 3);
+            _version = value;
+        }
     }
 
     public HashSet<string> Imports =>
@@ -42,10 +55,16 @@ public sealed class Protobuf
             writer.WriteLine(AssemblyName);
         }
 
+        if (SourceName is not null)
+        {
+            writer.Write("// Source: ");
+            writer.WriteLine(SourceName);
+        }
+
         writer.WriteLine();
         writer.WriteLine(
             Edition is null
-                ? """syntax = "proto3";"""
+                ? $"""syntax = "proto{Version}";"""
                 : $"""edition = "{Edition}";""");
 
         if (_imports is not null)
@@ -60,10 +79,10 @@ public sealed class Protobuf
             }
         }
 
-        if (Namespace is not null)
+        if (CilNamespace is not null)
         {
             writer.WriteLine();
-            WriteOptionTo(writer, "csharp_namespace", Namespace, true);
+            WriteOptionTo(writer, "csharp_namespace", CilNamespace, true);
         }
 
         foreach (TopLevel topLevel in TopLevels)

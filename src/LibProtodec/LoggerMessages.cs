@@ -15,6 +15,9 @@ internal static partial class LoggerMessages
     [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to locate corresponding id field; likely stripped or otherwise obfuscated.")]
     internal static partial void LogFailedToLocateIdField(this ILogger logger);
 
+    [LoggerMessage(Level = LogLevel.Warning, Message = "{msg} is not yet implemented. Open an issue if this is something you need.")]
+    internal static partial void LogNotImplemented(this ILogger logger, string msg);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Loaded {typeCount} types from {assemblyCount} assemblies for parsing.")]
     internal static partial void LogLoadedTypeAndAssemblyCount(this ILogger logger, int typeCount, int assemblyCount);
 

@@ -12,7 +12,7 @@ namespace LibProtodec.Models.Protobuf.TopLevels;
 
 public abstract class TopLevel
 {
-    public required string Name { get; init; }
+    public required string Name { get; set; }
 
     public bool      IsObsolete { get; init; }
     public Protobuf? Protobuf   { get; set;  }

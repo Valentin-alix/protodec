@@ -5,29 +5,43 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 using System.IO;
+using CommunityToolkit.Diagnostics;
 using LibProtodec.Models.Protobuf.TopLevels;
 using LibProtodec.Models.Protobuf.Types;
 
 namespace LibProtodec.Models.Protobuf.Fields;
 
-public sealed class MessageField(Message declaringMessage)
+public sealed class MessageField
 {
     public required IProtobufType Type { get; init; }
-    public required string        Name { get; init; }
-    public required int           Id   { get; init; }
+    public Message? DeclaringMessage { get; set; }
 
+    public string? Name { get; set; }
+    public int     Id   { get; set; }
+
+    public bool IsOptional { get; set;  }
+    public bool IsRequired { get; set;  }
     public bool IsObsolete { get; init; }
     public bool HasHasProp { get; init; }
 
     public void WriteTo(TextWriter writer, bool isOneOf)
     {
-        if (HasHasProp && !isOneOf && Type is not Repeated)
+        Guard.IsNotNull(Type);
+        Guard.IsNotNull(Name);
+        Guard.IsNotNull(DeclaringMessage);
+
+        if (IsOptional || (HasHasProp && !isOneOf && Type is not Repeated))
         {
             writer.Write("optional ");
         }
 
+        if (IsRequired)
+        {
+            writer.Write("required ");
+        }
+
         writer.Write(
-            declaringMessage.QualifyTypeName(Type));
+            DeclaringMessage.QualifyTypeName(Type));
         writer.Write(' ');
         writer.Write(Name);
         writer.Write(" = ");

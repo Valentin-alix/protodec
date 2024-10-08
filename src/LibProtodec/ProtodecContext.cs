@@ -38,8 +38,6 @@ public partial class ProtodecContext
     {
         writer.WriteLine("// Decompiled with protodec");
         writer.WriteLine();
-        writer.WriteLine("""syntax = "proto3";""");
-        writer.WriteLine();
 
         foreach (TopLevel topLevel in Protobufs.SelectMany(static proto => proto.TopLevels))
         {
@@ -119,13 +117,14 @@ public partial class ProtodecContext
                 continue;
             }
 
-            MessageField field = new(message)
+            MessageField field = new()
             {
                 Type       = ParseFieldType(propertyType, options, protobuf),
                 Name       = TranslateMessageFieldName(property.Name),
                 Id         = (int)idFields[fi].ConstantValue!,
                 IsObsolete = HasObsoleteAttribute(property.CustomAttributes),
-                HasHasProp = msgFieldHasHasProp
+                HasHasProp = msgFieldHasHasProp,
+                DeclaringMessage = message
             };
 
             Logger?.LogParsedField(field.Name, field.Id, field.Type.Name);
@@ -499,7 +498,7 @@ public partial class ProtodecContext
         Protobuf protobuf = new()
         {
             AssemblyName = topLevelType.DeclaringAssemblyName,
-            Namespace    = topLevelType.Namespace
+            CilNamespace = topLevelType.Namespace
         };
 
         topLevel.Protobuf = protobuf;

@@ -4,17 +4,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+using CommunityToolkit.Diagnostics;
+
 namespace LibProtodec.Models.Protobuf.Fields;
 
 public sealed class EnumField
 {
-    public required string Name { get; init; }
-    public required int    Id   { get; init; }
+    public string? Name { get; set; }
+    public int     Id   { get; set; }
 
     public bool IsObsolete { get; init; }
 
     public void WriteTo(System.IO.TextWriter writer)
     {
+        Guard.IsNotNull(Name);
+
         writer.Write(Name);
         writer.Write(" = ");
         writer.Write(Id);
