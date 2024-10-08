@@ -26,16 +26,19 @@ public sealed class Enum : TopLevel, INestableType
         if (ContainsDuplicateFieldId)
         {
             Protobuf.WriteOptionTo(writer, "allow_alias", "true");
+            writer.WriteLine();
         }
 
         if (this.IsObsolete)
         {
             Protobuf.WriteOptionTo(writer, "deprecated", "true");
+            writer.WriteLine();
         }
 
         if (IsClosed)
         {
             Protobuf.WriteOptionTo(writer, "features.enum_type", "CLOSED");
+            writer.WriteLine();
         }
 
         foreach (EnumField field in Fields)

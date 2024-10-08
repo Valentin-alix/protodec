@@ -36,14 +36,13 @@ public partial class ProtodecContext
 
     public void WriteAllTo(IndentedTextWriter writer)
     {
-        writer.WriteLine("// Decompiled with protodec");
-        writer.WriteLine();
+        writer.Write("// Decompiled with protodec");
 
         foreach (TopLevel topLevel in Protobufs.SelectMany(static proto => proto.TopLevels))
         {
+            writer.WriteLine();
+            writer.WriteLine();
             topLevel.WriteTo(writer);
-            writer.WriteLine();
-            writer.WriteLine();
         }
     }
 

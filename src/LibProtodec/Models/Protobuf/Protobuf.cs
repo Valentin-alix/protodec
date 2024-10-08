@@ -69,24 +69,25 @@ public sealed class Protobuf
 
         if (_imports is not null)
         {
-            writer.WriteLine();
-            
             foreach (string import in _imports)
             {
+                writer.WriteLine();
                 writer.Write("import \"");
                 writer.Write(import);
-                writer.WriteLine("\";");
+                writer.Write("\";");
             }
         }
 
         if (CilNamespace is not null)
         {
             writer.WriteLine();
+            writer.WriteLine();
             WriteOptionTo(writer, "csharp_namespace", CilNamespace, true);
         }
 
         foreach (TopLevel topLevel in TopLevels)
         {
+            writer.WriteLine();
             writer.WriteLine();
             topLevel.WriteTo(writer);
         }
@@ -110,6 +111,6 @@ public sealed class Protobuf
             writer.Write('\"');
         }
 
-        writer.WriteLine(';');
+        writer.Write(';');
     }
 }

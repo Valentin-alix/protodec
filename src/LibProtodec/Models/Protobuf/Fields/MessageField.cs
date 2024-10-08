@@ -13,7 +13,9 @@ namespace LibProtodec.Models.Protobuf.Fields;
 
 public sealed class MessageField
 {
-    public required IProtobufType Type { get; init; }
+    private bool? _isRepeated;
+
+    public IProtobufType? Type { get; set; }
     public Message? DeclaringMessage { get; set; }
 
     public string? Name { get; set; }
@@ -23,6 +25,11 @@ public sealed class MessageField
     public bool IsRequired { get; set;  }
     public bool IsObsolete { get; init; }
     public bool HasHasProp { get; init; }
+    public bool IsRepeated
+    {
+        get => _isRepeated ??= Type is Repeated;
+        set => _isRepeated = value;
+    }
 
     public void WriteTo(TextWriter writer, bool isOneOf)
     {
@@ -30,7 +37,7 @@ public sealed class MessageField
         Guard.IsNotNull(Name);
         Guard.IsNotNull(DeclaringMessage);
 
-        if (IsOptional || (HasHasProp && !isOneOf && Type is not Repeated))
+        if (IsOptional || (HasHasProp && !isOneOf && !IsRepeated))
         {
             writer.Write("optional ");
         }

@@ -28,6 +28,7 @@ public sealed class Message : TopLevel, INestableType
         if (this.IsObsolete)
         {
             Protobuf.WriteOptionTo(writer, "deprecated", "true");
+            writer.WriteLine();
         }
 
         int[] oneOfs = OneOfs.SelectMany(static oneOf => oneOf.Value).ToArray();

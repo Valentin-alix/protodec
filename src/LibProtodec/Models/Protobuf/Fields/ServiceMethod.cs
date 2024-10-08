@@ -50,6 +50,7 @@ public sealed class ServiceMethod(Service declaringService)
             writer.Indent++;
 
             Protobuf.WriteOptionTo(writer, "deprecated", "true");
+            writer.WriteLine();
 
             writer.Indent--;
             writer.WriteLine('}');

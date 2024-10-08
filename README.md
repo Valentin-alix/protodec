@@ -22,7 +22,7 @@ Options:
 
 Commands:
   il2cpp    Use LibCpp2IL backend to directly load Il2Cpp compiled game assembly. EXPERIMENTAL.
-  lua       Use Lua AST backend to load Lua source files.
+  lua       Use Loretta backend to load Lua source files.
 ```
 See per-command help message for more info.
 

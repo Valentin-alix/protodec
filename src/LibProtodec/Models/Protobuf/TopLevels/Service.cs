@@ -24,6 +24,7 @@ public sealed class Service : TopLevel
         if (this.IsObsolete)
         {
             Protobuf.WriteOptionTo(writer, "deprecated", "true");
+            writer.WriteLine();
         }
 
         foreach (ServiceMethod method in Methods)

@@ -16,17 +16,25 @@ namespace LibProtodec.Loaders;
 
 public sealed class LuaSourceLoader
 {
-    public IReadOnlyList<SyntaxTree> LoadedSyntaxTrees { get; }
+    public IReadOnlyDictionary<string, SyntaxTree> LoadedSyntaxTrees { get; }
 
     public LuaSourceLoader(string sourcePath, ILogger<LuaSourceLoader>? logger = null)
     {
         LoadedSyntaxTrees = File.Exists(sourcePath)
-            ? [LoadSyntaxTreeFromSourceFile(sourcePath)]
+            ? new Dictionary<string, SyntaxTree> { { Path.GetFileNameWithoutExtension(sourcePath) , LoadSyntaxTreeFromSourceFile(sourcePath) } }
             : Directory.EnumerateFiles(sourcePath, searchPattern: "*.lua")
-                       .Select(LoadSyntaxTreeFromSourceFile)
-                       .ToList();
+                       .Select(static sourcePath =>
+                           (Path.GetFileNameWithoutExtension(sourcePath), LoadSyntaxTreeFromSourceFile(sourcePath)))
+                       .ToDictionary();
 
         logger?.LogLoadedLuaSyntaxTrees(LoadedSyntaxTrees.Count);
+    }
+
+    public SyntaxTree ResolveImport(string import)
+    {
+        import = Path.GetFileNameWithoutExtension(import);
+
+        return LoadedSyntaxTrees[import];
     }
 
     private static SyntaxTree LoadSyntaxTreeFromSourceFile(string filePath)

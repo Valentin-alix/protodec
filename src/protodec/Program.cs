@@ -117,17 +117,23 @@ internal sealed class Commands
     }
 
     /// <summary>
-    ///     Use Lua AST backend to load Lua source files.
+    ///     Use Loretta backend to load Lua source files.
     /// </summary>
     /// <param name="targetPath">Either the path to the target lua file or a directory of lua files, all of which be parsed.</param>
     /// <param name="outPath">An existing directory to output into individual files, otherwise output to a single file.</param>
+    /// <param name="skipEnums">Skip parsing enums and replace references to them with int32.</param>
     /// <param name="logLevel">Logging severity level.</param>
     [Command("lua")]
     public void Lua(
         [Argument] string targetPath,
         [Argument] string outPath,
+        bool     skipEnums,
         LogLevel logLevel = LogLevel.Information)
     {
+        ParserOptions options = ParserOptions.None;
+        if (skipEnums)
+            options |= ParserOptions.SkipEnums;
+
         using ILoggerFactory loggerFactory = CreateLoggerFactory(logLevel);
         ILogger logger = CreateProtodecLogger(loggerFactory);
 
@@ -140,9 +146,9 @@ internal sealed class Commands
         };
 
         logger.LogInformation("Parsing Lua syntax trees...");
-        foreach (SyntaxTree ast in loader.LoadedSyntaxTrees)
+        foreach (SyntaxTree ast in loader.LoadedSyntaxTrees.Values)
         {
-            ctx.ParseLuaSyntaxTree(ast);
+            ctx.ParseLuaSyntaxTree(loader, ast, options);
         }
 
         // NOTE: I'm duplicating this code rather than refactoring because I have a lot of uncommited changes on another computer,
