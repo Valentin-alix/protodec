@@ -34,14 +34,16 @@ public class ProtodecContext
 
     public NameLookupFunc? NameLookup { get; set; }
 
-    public void WriteAllTo(IndentedTextWriter writer)
+    public void WriteAllTo(ILogger logger,IndentedTextWriter writer)
     {
         writer.WriteLine("// Decompiled with protodec");
         writer.WriteLine();
         writer.WriteLine("""syntax = "proto3";""");
         writer.WriteLine();
+        writer.WriteLine("""import "google/protobuf/any.proto";""");
+        writer.WriteLine();
 
-        foreach (TopLevel topLevel in Protobufs.SelectMany(static proto => proto.TopLevels))
+        foreach (TopLevel topLevel in Protobufs.SelectMany(static proto => proto.TopLevels).OrderBy(static topLevel => topLevel.Name))
         {
             topLevel.WriteTo(writer);
             writer.WriteLine();
